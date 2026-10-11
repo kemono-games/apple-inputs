@@ -123,7 +123,7 @@ def export(args):
     for name in ('libclang_rt.ios.a', 'libclang_rt.iossim.a'):
         shutil.copy2(resource / 'lib/darwin' / name, darwin / name)
         # Consumers require arm64; other runtime slices are preserved as input bytes.
-        subprocess.run(['xcrun', 'lipo', '-verify_arch', 'arm64', str(darwin / name)],
+        subprocess.run(['xcrun', 'lipo', str(darwin / name), '-verify_arch', 'arm64'],
                        env=env, check=True)
     components['compiler_rt'] = {'version': output('xcrun', 'clang', '--version', env=env).splitlines()[0],
                                 'url': source, 'sha256': tree_hash(darwin), 'digest_kind': 'file-inventory'}

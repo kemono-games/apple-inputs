@@ -1,0 +1,62 @@
+name: Release Apple iOS inputs
+run-name: iOS SDK ${{ inputs.sdk_version }} / Xcode ${{ inputs.xcode_version || 'auto' }}
+on:
+  workflow_dispatch:
+    inputs:
+      sdk_version:
+        description: Exact iPhoneOS and iPhoneSimulator SDK version
+        type: string
+        required: true
+        default: '26.5'
+      xcode_version:
+        description: Xcode version (empty requires a unique SDK match)
+        type: string
+        required: false
+        default: '26.6'
+      revision:
+        description: Release revision; existing tags are never overwritten
+        type: string
+        required: true
+        default: '1'
+permissions:
+  contents: write
+concurrency:
+  group: apple-inputs-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SDK_VERSION: ${{ inputs.sdk_version }}
+      XCODE_VERSION: ${{ inputs.xcode_version }}
+      REVISION: ${{ inputs.revision }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Test exporter
+        run: python3 -m unittest discover -s tests
+      - name: Export and checksum both SDKs and runtimes
+        id: export
+        run: |
+          umask 022
+          python3 -u scripts/export.py --sdk-version "$SDK_VERSION" --xcode-version "$XCODE_VERSION" --revision "$REVISION"
+      - name: Publish complete release (no Actions artifacts)
+        env:
+          TAG: ${{ steps.export.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # A draft is created first. Existing release/tag conflicts fail closed;
+          # assets are never replaced with --clobber, even on a rerun.
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG"; then
+            echo "Tag already exists: $TAG; use a new revision" >&2
+            exit 1
+          else
+            status=$?
+            test "$status" -eq 2 || exit "$status"
+          fi
+          gh release create "$TAG" --target "$GITHUB_SHA" --draft --title "$TAG" --notes-file dist/release-notes.md
+          gh release upload "$TAG" dist/apple-inputs.tar.gz dist/apple-inputs.sha256 dist/apple-inputs.json dist/provenance.json
+          gh release edit "$TAG" --draft=false --latest=false
+          gh release view "$TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"

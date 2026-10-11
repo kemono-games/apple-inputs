@@ -1,17 +1,12 @@
 name: Release Apple iOS inputs
-run-name: iOS SDK ${{ inputs.sdk_version }} / Xcode ${{ inputs.xcode_version || 'auto' }}
+run-name: Apple inputs / Xcode ${{ inputs.xcode_version }} / r${{ inputs.revision }}
 on:
   workflow_dispatch:
     inputs:
-      sdk_version:
-        description: Exact iPhoneOS and iPhoneSimulator SDK version
+      xcode_version:
+        description: Exact Xcode minor or patch version from xcode-runners.json
         type: string
         required: true
-        default: '26.5'
-      xcode_version:
-        description: Xcode version (empty requires a unique SDK match)
-        type: string
-        required: false
         default: '26.6'
       revision:
         description: Release revision; existing tags are never overwritten
@@ -24,15 +19,29 @@ concurrency:
   group: apple-inputs-release
   cancel-in-progress: false
 jobs:
+  select:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      runner: ${{ steps.select.outputs.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Resolve reviewed Xcode runner mapping
+        id: select
+        env:
+          XCODE_VERSION: ${{ inputs.xcode_version }}
+        run: python3 scripts/runner.py --xcode-version "$XCODE_VERSION"
   release:
-    runs-on: macos-26
+    needs: select
+    runs-on: ${{ needs.select.outputs.runner }}
     timeout-minutes: 60
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      SDK_VERSION: ${{ inputs.sdk_version }}
       XCODE_VERSION: ${{ inputs.xcode_version }}
       REVISION: ${{ inputs.revision }}
+      SELECTED_RUNNER: ${{ needs.select.outputs.runner }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Test exporter
@@ -41,7 +50,7 @@ jobs:
         id: export
         run: |
           umask 022
-          python3 -u scripts/export.py --sdk-version "$SDK_VERSION" --xcode-version "$XCODE_VERSION" --revision "$REVISION"
+          python3 -u scripts/export.py --xcode-version "$XCODE_VERSION" --revision "$REVISION"
       - name: Publish complete release (no Actions artifacts)
         env:
           TAG: ${{ steps.export.outputs.tag }}

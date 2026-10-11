@@ -1,14 +1,50 @@
 # Apple iOS inputs
 
-Manually export matching iPhoneOS and iPhoneSimulator SDKs, libc++ headers and
-Darwin compiler-rt from the Xcode installations on GitHub's `macos-26` image.
-Inputs are published as GitHub Release assets, never Actions artifacts.
+Export iPhoneOS and iPhoneSimulator SDKs, libc++ headers and Darwin compiler-rt
+from an exact Xcode release on a compatible GitHub-hosted macOS runner. Inputs
+are published directly as GitHub Release assets, never Actions artifacts.
 
-Run **Release Apple iOS inputs** with the exact SDK version and optional Xcode
-version. Defaults are SDK **26.5** and Xcode **26.6**. These version numbers are
-not interchangeable. The workflow inventories installed Xcodes and fails if
-there is no exact match, or if an SDK-only selection is ambiguous. It does not
-download arbitrary Xcode versions. Availability depends on the runner image.
+Run **Release Apple iOS inputs** with required `xcode_version` (default **26.6**)
+and `revision`. There is no SDK version input. The exporter reads the actual
+Xcode version/build with `xcodebuild -version`, then independently reads both SDK
+versions with `xcrun`. The SDK versions must agree and match their SDKSettings.
+For Xcode **26.6 (17F113)**, the currently verified SDK version is **26.5**;
+SDK version numbers are never inferred from Xcode version numbers.
+
+`xcode-runners.json` is the reviewed compatibility map. A read-only Ubuntu job
+resolves the exact version; the release job uses its macOS runner output as
+`runs-on`. It never constructs a label from the Xcode version or uses `latest`.
+The map records the official runner-images commit and per-image source URLs:
+
+| Exact Xcode versions | Runner | Official inventory |
+| --- | --- | --- |
+| 16.0, 16.1, 16.2, 16.3, 16.4 | macos-15 | [macOS 15 arm64](https://github.com/actions/runner-images/blob/8197087fc536320d1441203fdb5da9ae1b44b863/images/macos/macos-15-arm64-Readme.md) |
+| 26.0.1, 26.1.1, 26.2, 26.3, 26.4.1, 26.5, 26.6 | macos-26 | [macOS 26 arm64](https://github.com/actions/runner-images/blob/8197087fc536320d1441203fdb5da9ae1b44b863/images/macos/macos-26-arm64-Readme.md) |
+
+Only these exact version strings are accepted. For example, `26.4` is not an
+alias for `26.4.1`, and `26.6.0` is not substituted for `26.6`. Unknown versions,
+missing installations, multiple distinct matching installations, unexpected
+Xcode builds, incomplete SDKs or mismatched SDK versions fail explicitly.
+Filesystem aliases resolving to the same installation count only once.
+There is no automatic minor/major upgrade or Xcode 27 fallback.
+
+Hosted images change over time. To add a version, review the official image
+inventory, update the map's commit/source and exact version/build, and validate
+that version on CI. A documented mapping is not proof that every listed version
+has completed this export workflow; only 26.6 is exercised by the default
+release verification.
+
+```sh
+gh workflow run release.yml --repo kemono-games/apple-inputs --ref main \
+  -f xcode_version=26.6 -f revision=2
+# Example patch-version selection (not release-validated here):
+# gh workflow run release.yml --repo kemono-games/apple-inputs --ref main \
+#   -f xcode_version=26.4.1 -f revision=1
+python3 scripts/export.py --xcode-version 26.6 --revision 2 --out dist
+```
+
+Use an unused revision when running the example again. For local tests:
+`python3 -m unittest discover -s tests`.
 
 Release tags include SDK version, Xcode version/build and a revision, for example
 `ios-26.5-xcode-26.6-17F113-r1`. Existing releases/tags are not overwritten.

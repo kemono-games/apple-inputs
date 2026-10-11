@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-11",
+  "runner_images_commit": "8197087fc536320d1441203fdb5da9ae1b44b863",
+  "images": {
+    "macos-15": "https://github.com/actions/runner-images/blob/8197087fc536320d1441203fdb5da9ae1b44b863/images/macos/macos-15-arm64-Readme.md",
+    "macos-26": "https://github.com/actions/runner-images/blob/8197087fc536320d1441203fdb5da9ae1b44b863/images/macos/macos-26-arm64-Readme.md"
+  },
+  "xcodes": {
+    "16.0": {
+      "runner": "macos-15",
+      "build": "16A242d"
+    },
+    "16.1": {
+      "runner": "macos-15",
+      "build": "16B40"
+    },
+    "16.2": {
+      "runner": "macos-15",
+      "build": "16C5032a"
+    },
+    "16.3": {
+      "runner": "macos-15",
+      "build": "16E140"
+    },
+    "16.4": {
+      "runner": "macos-15",
+      "build": "16F6"
+    },
+    "26.0.1": {
+      "runner": "macos-26",
+      "build": "17A400"
+    },
+    "26.1.1": {
+      "runner": "macos-26",
+      "build": "17B100"
+    },
+    "26.2": {
+      "runner": "macos-26",
+      "build": "17C52"
+    },
+    "26.3": {
+      "runner": "macos-26",
+      "build": "17C529"
+    },
+    "26.4.1": {
+      "runner": "macos-26",
+      "build": "17E202"
+    },
+    "26.5": {
+      "runner": "macos-26",
+      "build": "17F42"
+    },
+    "26.6": {
+      "runner": "macos-26",
+      "build": "17F113"
+    }
+  }
+}

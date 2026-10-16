@@ -132,7 +132,11 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(runner.resolve('26.6')['build'], '17F113')
         self.assertEqual(runner.resolve('16.4')['runner'], 'macos-15')
         self.assertEqual(runner.resolve('26.4.1')['runner'], 'macos-26')
-        for version in ('26', '', 'latest', '26.4', '26.6.1', '27.0', '26.6;echo'):
+        self.assertEqual(runner.resolve('27.0')['build'], '27A266a')
+        self.assertEqual(runner.resolve('27.1')['runner'], 'xcode-27')
+        self.assertEqual(runner.resolve('27.1')['build'], '27A9269')
+        # 27.2 is a beta on the image and is deliberately not mapped.
+        for version in ('26', '27', '', 'latest', '26.4', '26.6.1', '27.1.0', '27.2', '26.6;echo'):
             with self.subTest(version=version), self.assertRaises(SystemExit):
                 runner.resolve(version)
 

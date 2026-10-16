@@ -7,7 +7,7 @@ on:
         description: Exact Xcode minor or patch version from xcode-runners.json
         type: string
         required: true
-        default: '26.6'
+        default: '27.1'
       revision:
         description: Release revision; existing tags are never overwritten
         type: string

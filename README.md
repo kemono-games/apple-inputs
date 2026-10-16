@@ -20,7 +20,7 @@ The map records the official runner-images commit and per-image source URLs:
 | --- | --- | --- |
 | 16.0, 16.1, 16.2, 16.3, 16.4 | macos-15 | [macOS 15 arm64](https://github.com/actions/runner-images/blob/e3fa5414d230773024d4a669a8402b50cd28f036/images/macos/macos-15-arm64-Readme.md) |
 | 26.0.1, 26.1.1, 26.2, 26.3, 26.4.1, 26.5, 26.6 | macos-26 | [macOS 26 arm64](https://github.com/actions/runner-images/blob/e3fa5414d230773024d4a669a8402b50cd28f036/images/macos/macos-26-arm64-Readme.md) |
-| 27.0 (27A266a), 27.1 (27A9269) | xcode-27 | [Xcode 27 arm64](https://github.com/actions/runner-images/blob/e3fa5414d230773024d4a669a8402b50cd28f036/images/macos/xcode-27-arm64-Readme.md) |
+| 27.0 (27A266a), 27.1 (27A9275) | xcode-27 | [Xcode 27 arm64](https://github.com/actions/runner-images/blob/e3fa5414d230773024d4a669a8402b50cd28f036/images/macos/xcode-27-arm64-Readme.md) |
 
 Only these exact version strings are accepted. For example, `26.4` is not an
 alias for `26.4.1`, and `26.6.0` is not substituted for `26.6`. Unknown versions,
@@ -31,10 +31,10 @@ There is no automatic minor/major upgrade or fallback between Xcode lines.
 
 `xcode-27` is GitHub's Xcode 27 image (macOS 27; still labelled a public
 preview in [actions/runner-images#14404](https://github.com/actions/runner-images/issues/14404)).
-Its 27.1 is build 27A9269, installed as `Xcode_27.1_beta.app` with the
-`Xcode_27.1.app` alias; another 27.1 build (for example a locally installed
-27A9275) is a different input and is refused, not substituted. Its 27.2 is a
-beta and is not mapped.
+Its 27.1 is build 27A9275, installed as `Xcode_27.1_Release_Candidate.app`
+(observed by the 2026-10-16 export run; the inventory at the pinned commit
+still lists the earlier 27A9269). Any other 27.1 build is a different input and
+is refused, not substituted. Its 27.2 is a beta and is not mapped.
 
 Hosted images change over time. To add a version, review the official image
 inventory, update the map's commit/source and exact version/build, and validate
